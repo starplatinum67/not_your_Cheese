@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CinePhile Reviews</title>
+<style>
+  :root{
+    --bg:#14181c; --bg2:#1c2228; --card:#222a33; --ink:#e8eef4; --muted:#8fa1b3;
+    --green:#00e054; --orange:#ff8000; --blue:#40bcf4; --red:#ff4d6d; --gold:#ffd166;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%,#24323f 0%,transparent 60%),
+               radial-gradient(900px 500px at -10% 30%,#1f2b22 0%,transparent 55%),var(--bg);
+    color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;line-height:1.6;
+    overflow-x:hidden;
+  }
+  .toggle{position:absolute;left:-9999px}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;display:flex;gap:6px;align-items:center;flex-wrap:wrap;
+    padding:12px 5vw;background:rgba(20,24,28,.88);backdrop-filter:blur(10px);
+    border-bottom:1px solid #2c3640;
+  }
+  .logo{font-weight:800;letter-spacing:.5px;margin-right:auto;display:flex;align-items:center;gap:4px}
+  .dot{width:14px;height:14px;border-radius:50%;display:inline-block}
+  .dot.o{background:var(--orange)}.dot.g{background:var(--green);margin-left:-5px}.dot.b{background:var(--blue);margin-left:-5px}
+  .logo span.t{margin-left:8px}
+  nav a{color:var(--muted);text-decoration:none;font-size:.9rem;padding:6px 12px;border-radius:20px;transition:.25s}
+  nav a:hover{color:#111;background:var(--green);transform:translateY(-2px)}
+
+  /* ---------- HERO ---------- */
+  header.hero{
+    min-height:78vh;display:grid;place-items:center;text-align:center;padding:60px 6vw;position:relative;overflow:hidden;
+  }
+  .hero::before,.hero::after{
+    content:"";position:absolute;left:0;right:0;height:46px;
+    background:repeating-linear-gradient(90deg,#000 0 26px,transparent 26px 46px);opacity:.55;
+    animation:film 6s linear infinite;
+  }
+  .hero::before{top:0}.hero::after{bottom:0;animation-direction:reverse}
+  @keyframes film{to{background-position:46px 0}}
+  .hero h1{
+    font-size:clamp(2.4rem,8vw,6rem);line-height:1.05;font-weight:900;letter-spacing:-1px;
+    background:linear-gradient(90deg,var(--orange),var(--green),var(--blue),var(--orange));
+    background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:shine 8s linear infinite;
+  }
+  @keyframes shine{to{background-position:300% 0}}
+  .hero p{max-width:640px;margin:20px auto 30px;color:var(--muted);font-size:1.15rem}
+  .btn{
+    display:inline-block;cursor:pointer;border:none;color:#06140b;background:var(--green);
+    padding:14px 30px;border-radius:40px;font-weight:800;font-size:1rem;text-decoration:none;
+    box-shadow:0 0 0 0 rgba(0,224,84,.6);animation:pulse 2.2s infinite;transition:transform .2s;
+  }
+  .btn:hover{transform:scale(1.07) rotate(-1deg)}
+  @keyframes pulse{70%{box-shadow:0 0 0 18px rgba(0,224,84,0)}100%{box-shadow:0 0 0 0 rgba(0,224,84,0)}}
+
+  /* ---------- MARQUEE ---------- */
+  .marquee{overflow:hidden;background:var(--bg2);border-block:1px solid #2c3640;padding:10px 0;white-space:nowrap}
+  .marquee div{display:inline-block;animation:scroll 40s linear infinite;color:var(--muted);font-size:.95rem}
+  .marquee:hover div{animation-play-state:paused}
+  .marquee b{color:var(--orange);margin:0 14px}
+  @keyframes scroll{to{transform:translateX(-50%)}}
+
+  /* ---------- SECTIONS ---------- */
+  section{padding:80px 5vw 20px;max-width:1280px;margin:auto}
+  section h2{font-size:clamp(1.6rem,4vw,2.6rem);margin-bottom:6px;display:flex;align-items:center;gap:14px}
+  section h2::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,var(--green),transparent)}
+  .sub{color:var(--muted);margin-bottom:32px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:26px}
+
+  /* ---------- FLIP CARDS ---------- */
+  .card{perspective:1100px;height:380px}
+  .inner{position:relative;width:100%;height:100%;transition:transform .8s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d}
+  .card:hover .inner,.card:focus-within .inner{transform:rotateY(180deg)}
+  .face{
+    position:absolute;inset:0;border-radius:16px;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+    overflow:hidden;box-shadow:0 14px 30px rgba(0,0,0,.45);
+  }
+  .front{display:flex;flex-direction:column;justify-content:flex-end;padding:22px}
+  .front::before{ /* poster decorations */
+    content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 2px,transparent 2px 14px);
+  }
+  .front::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.85))}
+  .emoji{position:absolute;top:18px;right:20px;font-size:4.2rem;z-index:1;filter:drop-shadow(0 6px 8px rgba(0,0,0,.5));transition:transform .4s}
+  .card:hover .emoji{transform:scale(1.15) rotate(8deg)}
+  .year{position:absolute;top:18px;left:20px;z-index:1;font-size:.8rem;font-weight:700;background:rgba(0,0,0,.55);padding:3px 11px;border-radius:20px}
+  .front h3{position:relative;z-index:1;font-size:1.5rem;line-height:1.15;text-shadow:0 2px 8px #000}
+  .front small{position:relative;z-index:1;color:#d6dee6;margin-top:4px}
+  .back{
+    transform:rotateY(180deg);background:var(--card);padding:22px;border:1px solid #33414e;
+    display:flex;flex-direction:column;gap:8px;overflow:auto;
+  }
+  .back h4{color:var(--green);font-size:1.15rem}
+  .back .meta{font-size:.8rem;color:var(--blue)}
+  .back p{font-size:.92rem;color:#cdd8e2}
+  .back .fact{margin-top:auto;font-size:.82rem;color:var(--gold);border-top:1px dashed #3a4856;padding-top:8px}
+  .stars{color:var(--orange);letter-spacing:2px}
+
+  /* poster palettes */
+  .p1{background:linear-gradient(160deg,#3b0d0d,#0c0c0c)}
+  .p2{background:linear-gradient(160deg,#a4161a,#1b1b3a)}
+  .p3{background:linear-gradient(160deg,#1c2541,#0b0d17)}
+  .p4{background:linear-gradient(160deg,#0077b6,#03045e)}
+  .p5{background:linear-gradient(160deg,#5f0f40,#0f4c5c)}
+  .p6{background:linear-gradient(160deg,#6a040f,#ffb703 140%)}
+  .p7{background:linear-gradient(160deg,#4a4e69,#111)}
+  .p8{background:linear-gradient(160deg,#386641,#a7c957 150%)}
+  .p9{background:linear-gradient(160deg,#ff9e9e,#5c2a9d)}
+  .p10{background:linear-gradient(160deg,#7b2cbf,#240046)}
+  .p11{background:linear-gradient(160deg,#2a9d8f,#264653)}
+  .p12{background:linear-gradient(160deg,#6d6875,#22223b)}
+  .p13{background:linear-gradient(160deg,#c9184a,#2b2d42)}
+  .p14{background:linear-gradient(160deg,#f77f00,#370617)}
+  .p15{background:linear-gradient(160deg,#3a5a40,#1b263b)}
+  .p16{background:linear-gradient(160deg,#9d0208,#370617)}
+  .p17{background:linear-gradient(160deg,#52796f,#2f3e46)}
+  .p18{background:linear-gradient(160deg,#ffafcc,#3a0ca3)}
+  .p19{background:linear-gradient(160deg,#6c757d,#212529)}
+  .p20{background:linear-gradient(160deg,#ff6d00,#10002b)}
+  .p21{background:linear-gradient(160deg,#00b4d8,#7209b7)}
+  .p22{background:linear-gradient(160deg,#caf0f8,#0077b6 140%)}
+
+  /* ---------- BIG TRILOGY STRIP ---------- */
+  .strip{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:10px}
+  .strip div{
+    background:var(--card);border:1px solid #33414e;border-radius:14px;padding:18px;transition:.3s;
+  }
+  .strip div:hover{transform:translateY(-8px);border-color:var(--orange);box-shadow:0 14px 30px rgba(255,128,0,.15)}
+  .strip b{color:var(--orange)}
+  @media(max-width:760px){.strip{grid-template-columns:1fr}}
+
+  /* ---------- REVEAL BUTTON + POPUP ---------- */
+  .final{text-align:center;padding:100px 5vw 60px}
+  .final h2{justify-content:center}
+  .final h2::after{display:none}
+
+  .modal{
+    display:none;position:fixed;inset:0;z-index:100;place-items:center;
+    background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+  }
+  #pop:checked ~ .modal{display:grid;animation:fade .3s}
+  #reveal:checked ~ .modal{display:none}
+  @keyframes fade{from{opacity:0}}
+  .box{
+    position:relative;max-width:480px;width:90%;text-align:center;padding:40px 30px;border-radius:20px;
+    background:linear-gradient(160deg,#243040,#161c23);border:2px solid var(--green);
+    box-shadow:0 0 60px rgba(0,224,84,.25);animation:pop .45s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes pop{from{transform:scale(.6) rotate(-4deg);opacity:0}}
+  .box .big{font-size:3rem}
+  .box p{margin:14px 0 24px;font-size:1.15rem}
+  .close{position:absolute;top:10px;right:16px;font-size:1.8rem;cursor:pointer;color:var(--muted);transition:.2s}
+  .close:hover{color:var(--red);transform:rotate(90deg)}
+
+  .flag-section{display:none;padding:80px 5vw 120px;text-align:center;position:relative}
+  #reveal:checked ~ .flag-section{display:block;animation:rise .9s cubic-bezier(.2,.8,.2,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(60px)}}
+  .flag-card{
+    max-width:720px;margin:auto;padding:50px 30px;border-radius:24px;
+    background:repeating-linear-gradient(45deg,#10161c 0 14px,#131a21 14px 28px);
+    border:2px dashed var(--orange);box-shadow:0 0 80px rgba(255,128,0,.2);
+  }
+  .flag-card h2{font-size:clamp(1.6rem,5vw,2.6rem);color:var(--orange)}
+  .flag-card p{margin-top:16px;font-size:1.2rem;color:#cdd8e2}
+  .user{
+    display:inline-block;margin-top:18px;padding:10px 24px;border-radius:12px;font-family:Consolas,monospace;
+    font-size:1.4rem;color:var(--green);background:#0b1a11;border:1px solid var(--green);
+    animation:glow 1.8s ease-in-out infinite alternate;
+  }
+  @keyframes glow{from{box-shadow:0 0 6px var(--green)}to{box-shadow:0 0 26px var(--green)}}
+
+  footer{text-align:center;color:var(--muted);padding:30px;font-size:.85rem;border-top:1px solid #2c3640}
+</style>
+</head>
+<body>
+
+<!-- hidden CSS-only state holders (must come before the elements they control) -->
+<input type="checkbox" id="pop" class="toggle">
+<input type="checkbox" id="reveal" class="toggle">
+
+<nav>
+  <div class="logo"><span class="dot g"></span><span class="dot b"></span><span class="dot o"></span><span class="t">CinePhile Reviews</span></div>
+  <a href="#legends">Legends</a>
+  <a href="#nolan">Nolan-verse</a>
+  <a href="#anime">Anime &amp; World</a>
+  <a href="#more">10 More</a>
+  <a href="#source">Source</a>
+</nav>
+
+<header class="hero">
+  <div>
+    <h1>The Greatest Movies<br>Ever Made</h1>
+    <p>A cinephile's cheat-sheet: My all time favorites, franchise giants and some hidden Japanese gems. Hover (or tap) any poster to flip it open.</p>
+    <a class="btn" href="#legends">Start the reel ▶</a>
+  </div>
+</header>
+
+<div class="marquee"><div>
+  <b>★</b>The Godfather <b>★</b>The Dark Knight <b>★</b>Inception <b>★</b>Oppenheimer <b>★</b>Shin Godzilla <b>★</b>The Taste of Tea <b>★</b>A Silent Voice <b>★</b>Infinity Castle <b>★</b>A Gentle Breeze in the Village <b>★</b>Avatar <b>★</b>Marvel Cinematic Universe
+  <b>★</b>The Godfather <b>★</b>The Dark Knight <b>★</b>Inception <b>★</b>Oppenheimer <b>★</b>Shin Godzilla <b>★</b>The Taste of Tea <b>★</b>A Silent Voice <b>★</b>Infinity Castle <b>★</b>A Gentle Breeze in the Village <b>★</b>Avatar <b>★</b>Marvel Cinematic Universe
+</div></div>
+
+<!-- ================= LEGENDS ================= -->
+<section id="legends">
+  <h2>🏆 Hall of Legends</h2>
+  <p class="sub">The heavyweights that every "best of all time" list keeps coming back to.</p>
+  <div class="grid">
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p1"><span class="year">1972</span><span class="emoji">🌹</span><h3>The Godfather</h3><small>Crime · Drama</small></div>
+      <div class="face back"><h4>The Godfather</h4><div class="meta">Dir. Francis Ford Coppola · Crime Drama</div><div class="stars">★★★★★</div>
+        <p>The Corleone crime dynasty passes from aging patriarch Vito (Marlon Brando) to reluctant son Michael (Al Pacino), who is slowly consumed by the family business.</p>
+        <div class="fact">🎬 Won Best Picture at the Oscars and sits near the top of IMDb's all-time chart.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p2"><span class="year">2008–2019</span><span class="emoji">🛡️</span><h3>Marvel Cinematic Universe</h3><small>Superhero · Franchise</small></div>
+      <div class="face back"><h4>The MCU</h4><div class="meta">Starts with Iron Man (2008) · Shared universe</div><div class="stars">★★★★☆</div>
+        <p>Dozens of interconnected films built over years, climaxing in the Infinity Saga: Iron Man, Captain America, Thor and the Avengers versus Thanos.</p>
+        <div class="fact">🎬 Avengers: Endgame (2019) became one of the highest-grossing films ever made.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p4"><span class="year">2009</span><span class="emoji">🌿</span><h3>Avatar</h3><small>Sci-Fi · Adventure</small></div>
+      <div class="face back"><h4>Avatar</h4><div class="meta">Dir. James Cameron · Sci-Fi</div><div class="stars">★★★★☆</div>
+        <p>A paralysed marine is sent to the moon Pandora, where he inhabits a Na'vi body and ends up defending the natives from his own side.</p>
+        <div class="fact">🎬 Its 3D tech and visuals reshaped blockbuster filmmaking. Sequel: The Way of Water (2022).</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p3"><span class="year">2010</span><span class="emoji">🌀</span><h3>Inception</h3><small>Sci-Fi · Heist</small></div>
+      <div class="face back"><h4>Inception</h4><div class="meta">Dir. Christopher Nolan · Sci-Fi Thriller</div><div class="stars">★★★★★</div>
+        <p>Dom Cobb (Leonardo DiCaprio) steals secrets from dreams, and is offered one last job: plant an idea inside a target's mind.</p>
+        <div class="fact">🎬 That spinning-top ending is still debated today.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p5"><span class="year">2023</span><span class="emoji">☢️</span><h3>Oppenheimer</h3><small>Biography · Drama</small></div>
+      <div class="face back"><h4>Oppenheimer</h4><div class="meta">Dir. Christopher Nolan · Biopic</div><div class="stars">★★★★★</div>
+        <p>Cillian Murphy plays J. Robert Oppenheimer, the physicist who led the Manhattan Project, and the political fallout that followed.</p>
+        <div class="fact">🎬 Won seven Oscars including Best Picture, Best Director and Best Actor.</div></div>
+    </div></div>
+
+  </div>
+</section>
+
+<!-- ================= NOLAN / BALE ================= -->
+<section id="nolan">
+  <h2>🦇 Christian Bale's Batman</h2>
+  <p class="sub">Christopher Nolan's Dark Knight Trilogy: a gritty, grounded take on Gotham.</p>
+  <div class="strip">
+    <div><b>Batman Begins · 2005</b><br>Bruce Wayne trains with the League of Shadows and returns to Gotham to forge the Batman. Villains: Ra's al Ghul and Scarecrow.</div>
+    <div><b>The Dark Knight · 2008</b><br>Batman, Gordon and Harvey Dent face the Joker. Heath Ledger's performance won a posthumous Oscar and the film is a staple of IMDb's top 5.</div>
+    <div><b>The Dark Knight Rises · 2012</b><br>Eight years later, a broken Bruce must return to stop Bane from destroying Gotham. The epic conclusion of the trilogy.</div>
+  </div>
+  <br>
+  <div class="grid">
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p7"><span class="year">2008</span><span class="emoji">🃏</span><h3>The Dark Knight</h3><small>Crime · Superhero</small></div>
+      <div class="face back"><h4>The Dark Knight</h4><div class="meta">Dir. Christopher Nolan · Christian Bale, Heath Ledger</div><div class="stars">★★★★★</div>
+        <p>A crime thriller dressed as a superhero film: chaos versus order, with Gotham's soul at stake.</p>
+        <div class="fact">🎬 Parts were shot with IMAX cameras, a first for a major feature.</div></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ================= ANIME & WORLD ================= -->
+<section id="anime">
+  <h2>🇯🇵 Anime &amp; Japanese Cinema</h2>
+  <p class="sub">From kaiju satire to quiet village dramas.</p>
+  <div class="grid">
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p6"><span class="year">2016</span><span class="emoji">🦖</span><h3>Shin Godzilla</h3><small>Kaiju · Satire</small></div>
+      <div class="face back"><h4>Shin Godzilla</h4><div class="meta">Dir. Hideaki Anno &amp; Shinji Higuchi</div><div class="stars">★★★★☆</div>
+        <p>Godzilla rises from Tokyo Bay while the government drowns in committees and paperwork. Equal parts monster movie and bureaucratic satire.</p>
+        <div class="fact">🎬 Anno depicted the true meaning of "the God of Destruction, Gojira".</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p8"><span class="year">2004</span><span class="emoji">🍵</span><h3>The Taste of Tea</h3><small>Quirky · Family</small></div>
+      <div class="face back"><h4>The Taste of Tea (茶の味)</h4><div class="meta">Dir. Katsuhito Ishii</div><div class="stars">★★★★☆</div>
+        <p>A surreal, gentle look at the Haruno family in the countryside: first love, giant imaginary figures and daily oddities.</p>
+        <div class="fact">🎬 Slow, funny, warm. A great comfort watch and Hideaki Anno made a cameo in this film.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p9"><span class="year">2016</span><span class="emoji">🤟</span><h3>A Silent Voice</h3><small>Anime · Drama</small></div>
+      <div class="face back"><h4>A Silent Voice (聲の形)</h4><div class="meta">Dir. Naoko Yamada · Kyoto Animation</div><div class="stars">★★★★★</div>
+        <p>A former bully seeks redemption by reconnecting with the deaf girl he tormented in grade school. A film about guilt, forgiveness and communication.</p>
+        <div class="fact">🎬 Based on the manga by Yoshitoki Ōima.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p10"><span class="year">2025</span><span class="emoji">🗡️</span><h3>Demon Slayer: Infinity Castle</h3><small>Anime · Action</small></div>
+      <div class="face back"><h4>Demon Slayer: Infinity Castle</h4><div class="meta">Studio Ufotable · Dir. Haruo Sotozaki</div><div class="stars">★★★★★</div>
+        <p>Tanjiro and the Demon Slayer Corps fall into Muzan's shifting fortress for the climactic final-arc battles against the Upper Moons.</p>
+        <div class="fact">🎬 Ufotable's fluid combat animation is the main draw.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p11"><span class="year">2007</span><span class="emoji">🌾</span><h3>A Gentle Breeze in the Village</h3><small>Coming-of-age</small></div>
+      <div class="face back"><h4>A Gentle Breeze in the Village</h4><div class="meta">Dir. Nobuhiro Yamashita</div><div class="stars">★★★★☆</div>
+        <p>A transfer student arrives at a tiny rural school with only a handful of classmates. Nothing "happens", and that's the charm: summer, friendship, small-town life.</p>
+        <div class="fact">🎬 Yamashita also directed Linda Linda Linda.</div></div>
+    </div></div>
+
+  </div>
+</section>
+
+<!-- ================= 10 MORE ================= -->
+<section id="more">
+  <h2>🎞️ 10 More Greats, Dissected</h2>
+  <p class="sub">Other consistent heavyweights of all-time lists.</p>
+  <div class="grid">
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p12"><span class="year">1994</span><span class="emoji">⛓️</span><h3>The Shawshank Redemption</h3><small>Drama</small></div>
+      <div class="face back"><h4>The Shawshank Redemption</h4><div class="meta">Dir. Frank Darabont</div><div class="stars">★★★★★</div>
+        <p>Banker Andy Dufresne is sentenced to life in prison and quietly builds hope and a friendship with fellow inmate Red.</p>
+        <div class="fact">🎬 Long ranked #1 on IMDb's Top 250.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p13"><span class="year">1994</span><span class="emoji">💼</span><h3>Pulp Fiction</h3><small>Crime · Dark comedy</small></div>
+      <div class="face back"><h4>Pulp Fiction</h4><div class="meta">Dir. Quentin Tarantino</div><div class="stars">★★★★★</div>
+        <p>Intertwined stories of hitmen, a boxer and a gangster's wife told out of order, packed with iconic dialogue.</p>
+        <div class="fact">🎬 Won the Palme d'Or at Cannes.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p19"><span class="year">1993</span><span class="emoji">🕯️</span><h3>Schindler's List</h3><small>History · Drama</small></div>
+      <div class="face back"><h4>Schindler's List</h4><div class="meta">Dir. Steven Spielberg</div><div class="stars">★★★★★</div>
+        <p>Businessman Oskar Schindler saves over a thousand Jewish people by employing them in his factories during the Holocaust.</p>
+        <div class="fact">🎬 Mostly shot in black and white, and won Best Picture.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p12"><span class="year">1957</span><span class="emoji">⚖️</span><h3>12 Angry Men</h3><small>Courtroom · Drama</small></div>
+      <div class="face back"><h4>12 Angry Men</h4><div class="meta">Dir. Sidney Lumet</div><div class="stars">★★★★★</div>
+        <p>A single juror doubts a guilty verdict and forces eleven others to re-examine the case, all inside one jury room.</p>
+        <div class="fact">🎬 Proof that great cinema only needs a room and a script.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p15"><span class="year">2003</span><span class="emoji">💍</span><h3>LOTR: Return of the King</h3><small>Fantasy · Epic</small></div>
+      <div class="face back"><h4>The Return of the King</h4><div class="meta">Dir. Peter Jackson</div><div class="stars">★★★★★</div>
+        <p>Frodo and Sam near Mount Doom while Aragorn leads the armies of Men in the final stand against Sauron.</p>
+        <div class="fact">🎬 Won all 11 Oscars it was nominated for.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p16"><span class="year">1999</span><span class="emoji">🧼</span><h3>Fight Club</h3><small>Thriller · Satire</small></div>
+      <div class="face back"><h4>Fight Club</h4><div class="meta">Dir. David Fincher</div><div class="stars">★★★★☆</div>
+        <p>A sleepless office worker and soap salesman Tyler Durden start an underground fight club that spirals into something bigger.</p>
+        <div class="fact">🎬 Based on Chuck Palahniuk's novel. First rule: you know the rest.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p18"><span class="year">2001</span><span class="emoji">🐉</span><h3>Spirited Away</h3><small>Anime · Fantasy</small></div>
+      <div class="face back"><h4>Spirited Away</h4><div class="meta">Dir. Hayao Miyazaki · Studio Ghibli</div><div class="stars">★★★★★</div>
+        <p>Ten-year-old Chihiro wanders into a spirit world and must work at a bathhouse for gods to free her parents.</p>
+        <div class="fact">🎬 Won the Oscar for Best Animated Feature.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p17"><span class="year">2019</span><span class="emoji">🏠</span><h3>Parasite</h3><small>Thriller · Dark comedy</small></div>
+      <div class="face back"><h4>Parasite</h4><div class="meta">Dir. Bong Joon-ho</div><div class="stars">★★★★★</div>
+        <p>A poor family cons its way into the lives of a wealthy household, until the class divide turns violent.</p>
+        <div class="fact">🎬 First non-English film to win Best Picture at the Oscars.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p20"><span class="year">2014</span><span class="emoji">🪐</span><h3>Interstellar</h3><small>Sci-Fi · Drama</small></div>
+      <div class="face back"><h4>Interstellar</h4><div class="meta">Dir. Christopher Nolan</div><div class="stars">★★★★★</div>
+        <p>With Earth dying, a former pilot leads a crew through a wormhole searching for a new home, torn between mission and his daughter.</p>
+        <div class="fact">🎬 Physicist Kip Thorne advised on the black hole visuals.</div></div>
+    </div></div>
+
+    <div class="card" tabindex="0"><div class="inner">
+      <div class="face front p21"><span class="year">2016</span><span class="emoji">☄️</span><h3>Your Name.</h3><small>Anime · Romance</small></div>
+      <div class="face back"><h4>Your Name. (君の名は。)</h4><div class="meta">Dir. Makoto Shinkai</div><div class="stars">★★★★★</div>
+        <p>A country girl and a Tokyo boy mysteriously swap bodies, and then a comet changes everything.</p>
+        <div class="fact">🎬 Became one of the highest-grossing anime films ever.</div></div>
+    </div></div>
+
+  </div>
+</section>
+
+<!-- ================= SOURCE BUTTON ================= -->
+<section id="source" class="final">
+  <h2>🎟️ That's a wrap!</h2>
+  <p class="sub">Curious how this list came together?</p>
+  <label for="pop" class="btn">want to see where i got these from?</label>
+</section>
+
+<!-- POPUP -->
+<div class="modal" role="dialog" aria-label="Source popup">
+  <div class="box">
+    <label for="pop" class="close" title="close">&times;</label>
+    <div class="big">💬⭐</div>
+    <p>I love to Watch movies of all types of genres and leave my comments and rate them in a well known site, Do check it.
+      Remember always check everything twice!!
+    </p>
+    <label for="reveal" class="btn">check it</label>
+  </div>
+</div>
+
+<!-- FINAL REVEALED SECTION -->
+<section class="flag-section" id="flag">
+  <div class="flag-card">
+    <h2>🚩 want the flag??</h2>
+    <p>Check my reviews and you might find the Flag</p> 
+    <p>ohh my username??</p>
+    <p>its</p>
+    <span class="user">"starPlatpoint9"</span>
+  </div>
+</section>
+
+<footer>Some of my actual ratings might differ, so please re-check again carefully!!</footer>
+
+</body>
+</html>
